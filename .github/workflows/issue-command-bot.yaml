@@ -60,11 +60,28 @@ jobs:
             try {
               if (comment?.includes("/assign")) {
                 try {
+                  let assignee = commenter; // Default to commenter
+                  
+                  // Check if a specific username was mentioned
+                  const assigneeParam = parseCommand(comment, "/assign");
+                  if (assigneeParam && assigneeParam.startsWith("@")) {
+                    // Remove the @ symbol and get the username
+                    assignee = assigneeParam.substring(1).trim();
+                  }
+                  
                   await github.rest.issues.addAssignees({
                     owner: repoOwner,
                     repo: repoName,
                     issue_number: issueNumber,
-                    assignees: [commenter]
+                    assignees: [assignee]
+                  });
+                  
+                  // Add a confirmation comment
+                  await github.rest.issues.createComment({
+                    owner: repoOwner,
+                    repo: repoName,
+                    issue_number: issueNumber,
+                    body: `✅ Issue assigned to @${assignee}`
                   });
                 } catch (error) {
                   await github.rest.issues.createComment({
