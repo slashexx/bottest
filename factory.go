@@ -8,12 +8,12 @@ import (
 )
 
 func CreateSource(name string) (interfaces.DataSource, error) {
-	source, exists := registry.GetSource(name)
-	if !exists {
-		return nil, fmt.Errorf("source %s not found", name)
-	}
-	return source, nil
-}
+// 	source, exists := registry.GetSource(name)
+// 	if !exists {
+// 		return nil, fmt.Errorf("source %s not found", name)
+// 	}
+// 	return source, nil
+// }
 
 func CreateDestination(name string) (interfaces.DataDestination, error) {
 	destination, exists := registry.GetDestination(name)
