@@ -172,6 +172,65 @@ jobs:
                 }
               }
 
+              if (comment?.includes("/lgtm")) {
+                try {
+                  const issueAuthor = (await github.rest.issues.get({
+                    owner: repoOwner,
+                    repo: repoName,
+                    issue_number: issueNumber
+                  })).data.user.login;
+                  
+                  if (commenter === issueAuthor) {
+                    throw new Error("You cannot LGTM your own issue");
+                  }
+                  
+                  await handleLabel("LGTM", "0e8a16", "Looks Good To Me");
+                  
+                  await github.rest.issues.createComment({
+                    owner: repoOwner,
+                    repo: repoName,
+                    issue_number: issueNumber,
+                    body: `✅ @${commenter} marked this issue as LGTM`
+                  });
+                } catch (error) {
+                  await github.rest.issues.createComment({
+                    owner: repoOwner,
+                    repo: repoName,
+                    issue_number: issueNumber,
+                    body: `❌ ${error.message} !`
+                  });
+                }
+              }
+              
+              if (comment?.includes("/cc")) {
+                try {
+                  const mentionedUsers = comment.split("/cc")[1]
+                    ?.trim()
+                    .split(/[\s,]+/)
+                    .filter(user => user.startsWith('@'))
+                    .map(user => user.substring(1).trim());
+                  
+                  if (!mentionedUsers || mentionedUsers.length === 0) {
+                    throw new Error("No valid users mentioned to CC");
+                  }
+                  
+                  const mentionText = mentionedUsers.map(user => `@${user}`).join(', ');
+                  await github.rest.issues.createComment({
+                    owner: repoOwner,
+                    repo: repoName,
+                    issue_number: issueNumber,
+                    body: `👋 ${mentionText} - you've been mentioned in this issue by @${commenter}`
+                  });
+                } catch (error) {
+                  await github.rest.issues.createComment({
+                    owner: repoOwner,
+                    repo: repoName,
+                    issue_number: issueNumber,
+                    body: `❌ Failed to mention users: ${error.message} !`
+                  });
+                }
+              }
+
             } catch (error) {
               await github.rest.issues.createComment({
                 owner: repoOwner,
