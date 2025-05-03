@@ -60,12 +60,10 @@ jobs:
             try {
               if (comment?.includes("/assign")) {
                 try {
-                  let assignee = commenter; // Default to commenter
+                  let assignee = commenter; 
                   
-                  // Check if a specific username was mentioned
                   const assigneeParam = parseCommand(comment, "/assign");
                   if (assigneeParam && assigneeParam.startsWith("@")) {
-                    // Remove the @ symbol and get the username
                     assignee = assigneeParam.substring(1).trim();
                   }
                   
@@ -76,7 +74,6 @@ jobs:
                     assignees: [assignee]
                   });
                   
-                  // Add a confirmation comment
                   await github.rest.issues.createComment({
                     owner: repoOwner,
                     repo: repoName,
@@ -168,36 +165,6 @@ jobs:
                     repo: repoName,
                     issue_number: issueNumber,
                     body: `❌ Failed to add triage label: ${error.message} !`
-                  });
-                }
-              }
-
-              if (comment?.includes("/lgtm")) {
-                try {
-                  const issueAuthor = (await github.rest.issues.get({
-                    owner: repoOwner,
-                    repo: repoName,
-                    issue_number: issueNumber
-                  })).data.user.login;
-                  
-                  if (commenter === issueAuthor) {
-                    throw new Error("You cannot LGTM your own issue");
-                  }
-                  
-                  await handleLabel("LGTM", "0e8a16", "Looks Good To Me");
-                  
-                  await github.rest.issues.createComment({
-                    owner: repoOwner,
-                    repo: repoName,
-                    issue_number: issueNumber,
-                    body: `✅ @${commenter} marked this issue as LGTM`
-                  });
-                } catch (error) {
-                  await github.rest.issues.createComment({
-                    owner: repoOwner,
-                    repo: repoName,
-                    issue_number: issueNumber,
-                    body: `❌ ${error.message} !`
                   });
                 }
               }
